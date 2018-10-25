@@ -1,1 +1,2 @@
-Details about this assignment can be found [on the course webpage](http://cs231n.github.io/), under Assignment #1 of Spring 2019.
+# Useful Resources
+[Gradient Descent computation for Hinge Loss function](https://twice22.github.io/hingeloss/).
