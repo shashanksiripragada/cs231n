@@ -37,11 +37,7 @@ class LinearClassifier(object):
     # Run stochastic gradient descent to optimize W
     loss_history = []
     for it in range(num_iters):
-      idx = np.random.choice(num_train,batch_size)  
-      X_batch = X[idx]
-      X_batch=X_batch.T
-      y_batch = y[idx]       
-
+      
       #########################################################################
       # TODO:                                                                 #
       # Sample batch_size elements from the training data and their           #
@@ -53,7 +49,9 @@ class LinearClassifier(object):
       # Hint: Use np.random.choice to generate indices. Sampling with         #
       # replacement is faster than sampling without replacement.              #
       #########################################################################
-      
+      idx = np.random.choice(num_train,batch_size)  
+      X_batch = X[idx]
+      y_batch = y[idx] 
       #########################################################################
       #                       END OF YOUR CODE                                #
       #########################################################################
@@ -68,7 +66,7 @@ class LinearClassifier(object):
       # Update the weights using the gradient and the learning rate.          #
       #########################################################################
       
-      W -= learning_rate * grad
+      self.W -= learning_rate * grad
       #########################################################################
       #                       END OF YOUR CODE                                #
       #########################################################################
@@ -97,7 +95,7 @@ class LinearClassifier(object):
     # TODO:                                                                   #
     # Implement this method. Store the predicted labels in y_pred.            #
     ###########################################################################
-    pass
+    y_pred = X.dot(self.W).argmax(axis=1)
     ###########################################################################
     #                           END OF YOUR CODE                              #
     ###########################################################################
@@ -118,7 +116,7 @@ class LinearClassifier(object):
     - loss as a single float
     - gradient with respect to self.W; an array of the same shape as W
     """
-    pass
+    pass 
 
 
 class LinearSVM(LinearClassifier):
