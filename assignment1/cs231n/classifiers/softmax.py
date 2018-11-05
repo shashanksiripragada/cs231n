@@ -37,7 +37,8 @@ def softmax_loss_naive(W, X, y, reg):
         loss += -np.log(probs[y[i]]) 
     
   loss /= X.shape[0]
-  loss += 0.5 * reg * np.sum(W * W)   
+  loss += 0.5 * reg * np.sum(W * W)
+    
     
         
         
