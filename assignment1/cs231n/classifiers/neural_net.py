@@ -93,7 +93,13 @@ class TwoLayerNet(object):
     # in the variable loss, which should be a scalar. Use the Softmax           #
     # classifier loss.                                                          #
     #############################################################################
-    pass
+    exp = np.exp(scores)
+    probs = exp / (np.sum(exp,axis=1,keepdims=True)
+    
+    data_loss = np.sum(-np.log(probs[np.arange(N),y])) / N
+    reg_loss = (1/2) * reg * np.sum(W1 * W1) + (1/2) * reg * np.sum(W2 * W2)
+    loss = data_loss + reg_loss                                      
+    
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
@@ -105,7 +111,7 @@ class TwoLayerNet(object):
     # and biases. Store the results in the grads dictionary. For example,       #
     # grads['W1'] should store the gradient on W1, and be a matrix of same size #
     #############################################################################
-    pass
+                   
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
@@ -164,7 +170,7 @@ class TwoLayerNet(object):
       # using stochastic gradient descent. You'll need to use the gradients   #
       # stored in the grads dictionary defined above.                         #
       #########################################################################
-      pass
+      
       #########################################################################
       #                             END OF YOUR CODE                          #
       #########################################################################
