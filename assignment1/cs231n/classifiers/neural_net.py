@@ -116,7 +116,7 @@ class TwoLayerNet(object):
     mask[arange(N),y] = 1
     
     grads['dW2'] = (A1.T.dot(probs-mask)) / N #(1/N from data_loss)
-    grads['db2'] =                
+    grads['db2'] = np.sum(probs-mask,axis=0) / N # form data_loss             
                    
     #############################################################################
     #                              END OF YOUR CODE                             #
