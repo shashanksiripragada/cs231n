@@ -75,7 +75,8 @@ class TwoLayerNet(object):
     # Store the result in the scores variable, which should be an array of      #
     # shape (N, C).                                                             #
     #############################################################################
-    A1 = np.maximum(0 , X.dot(W1)+b1) #relu
+    Z1 = X.dot(W1)+b1
+    A1 = np.maximum(0 , Z1) #relu
     scores = A1.dot(W2)+b2 
     #############################################################################
     #                              END OF YOUR CODE                             #
@@ -111,6 +112,11 @@ class TwoLayerNet(object):
     # and biases. Store the results in the grads dictionary. For example,       #
     # grads['W1'] should store the gradient on W1, and be a matrix of same size #
     #############################################################################
+    mask = np.zeros(probs.shape)
+    mask[arange(N),y] = 1
+    
+    grads['dW2'] = (A1.T.dot(probs-mask)) / N #(1/N from data_loss)
+    grads['db2'] =                
                    
     #############################################################################
     #                              END OF YOUR CODE                             #
