@@ -69,7 +69,7 @@ class TwoLayerNet(object):
     N, D = X.shape
 
     # Compute the forward pass
-    scores = np.zeros((N,C))
+    scores = None
     #############################################################################
     # TODO: Perform the forward pass, computing the class scores for the input. #
     # Store the result in the scores variable, which should be an array of      #
@@ -95,9 +95,10 @@ class TwoLayerNet(object):
     # classifier loss.                                                          #
     #############################################################################
     exp = np.exp(scores)
-    probs = exp / (np.sum(exp,axis=1,keepdims=True)
+    probs = exp / np.sum(exp,axis=1,keepdims=True)
     
-    data_loss = np.sum(-np.log(probs[np.arange(N),y])) / N
+    data_loss = np.sum(-np.log(probs[np.arange(N),y]))
+    data_loss = data_loss / N               
     reg_loss = (1/2) * reg * np.sum(W1 * W1) + (1/2) * reg * np.sum(W2 * W2)
     loss = data_loss + reg_loss                                      
     
