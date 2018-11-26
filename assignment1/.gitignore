@@ -2,3 +2,4 @@
 cs231n/ __pycache__/*
 cs231n/classifiers/__pycache__/*
 *.pyc
+.ipynb_checkpoints
