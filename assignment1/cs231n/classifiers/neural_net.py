@@ -117,12 +117,21 @@ class TwoLayerNet(object):
     
     dScores = (probs-mask)/N  # ∂L/∂Scores            
     
-    grads['dW2'] = np.dot(A1.T,dScores)
-    grads['db2'] = np.sum(dScores,axis=0)             
+    dW2 = np.dot(A1.T,dScores)
+    db2 = np.sum(dScores,axis=0)             
                    
     #backprop into the hidden layer
     dA1 =  np.dot(dScores,W2.T)  # (∂L/∂Scores) * (∂Scores/∂A1)
-                       
+    
+    #relu backprop
+    dZ1 =  dA1 * (Z1 >= 0)
+    
+    #1st Layer backprop
+    dW1 = np.dot(X.T,dZ1)
+    db1 = np.sum(dZ1,axis=0)
+    
+                   
+                   
                        
     #############################################################################
     #                              END OF YOUR CODE                             #
