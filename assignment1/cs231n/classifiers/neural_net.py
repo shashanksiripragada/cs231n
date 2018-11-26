@@ -186,7 +186,7 @@ class TwoLayerNet(object):
       # TODO: Create a random minibatch of training data and labels, storing  #
       # them in X_batch and y_batch respectively.                             #
       #########################################################################
-      pass
+      
       #########################################################################
       #                             END OF YOUR CODE                          #
       #########################################################################
@@ -246,7 +246,11 @@ class TwoLayerNet(object):
     ###########################################################################
     # TODO: Implement this function; it should be VERY simple!                #
     ###########################################################################
-    pass
+    Z1 = np.dot(X,self.params['W1']) + self.params['b1']
+    A1 = np.maximum(0,Z1)
+    scores = np.dot(A1,self.params['W2']) + self.params['b2']
+    
+    y_pred = np.argmax(scores,axis=1)
     ###########################################################################
     #                              END OF YOUR CODE                           #
     ###########################################################################
