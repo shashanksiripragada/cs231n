@@ -130,9 +130,16 @@ class TwoLayerNet(object):
     dW1 = np.dot(X.T,dZ1)
     db1 = np.sum(dZ1,axis=0)
     
-                   
-                   
-                       
+    #adding regularizaton due to reg_loss
+    dW2 += reg * W2
+    dW1 += reg * W1
+
+    grads['W2'] = dW2
+    grads['b2'] = db2
+
+    grads['W1'] = dW1
+    grads['b1'] = db1               
+                                                                 
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
