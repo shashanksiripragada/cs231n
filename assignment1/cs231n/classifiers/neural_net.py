@@ -115,9 +115,15 @@ class TwoLayerNet(object):
     mask = np.zeros(probs.shape)
     mask[arange(N),y] = 1
     
-    grads['dW2'] = (A1.T.dot(probs-mask)) / N #(1/N from data_loss)
-    grads['db2'] = np.sum(probs-mask,axis=0) / N # form data_loss             
+    dScores = (probs-mask)/N  # ∂L/∂Scores            
+    
+    grads['dW2'] = np.dot(A1.T,dScores)
+    grads['db2'] = np.sum(dScores,axis=0)             
                    
+    #backprop into the hidden layer
+    dA1 =  np.dot(dScores,W2.T)  # (∂L/∂Scores) * (∂Scores/∂A1)
+                       
+                       
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
