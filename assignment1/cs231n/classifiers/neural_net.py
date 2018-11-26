@@ -75,9 +75,9 @@ class TwoLayerNet(object):
     # Store the result in the scores variable, which should be an array of      #
     # shape (N, C).                                                             #
     #############################################################################
-    Z1 = X.dot(W1)+b1
-    A1 = np.maximum(0 , Z1) #relu
-    scores = A1.dot(W2)+b2 
+    Z1 = np.dot(X,W1)+b1
+    A1 = np.maximum(0,Z1) #relu
+    scores = np.dot(A1,W2)+b2 
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
@@ -94,12 +94,14 @@ class TwoLayerNet(object):
     # in the variable loss, which should be a scalar. Use the Softmax           #
     # classifier loss.                                                          #
     #############################################################################
-    exp = np.exp(scores)
+    norm_scores = scores - np.max(scores,axis=1,keepdims=True) #normalization of scores
+    exp = np.exp(norm_scores)
     probs = exp / np.sum(exp,axis=1,keepdims=True)
     
     data_loss = np.sum(-np.log(probs[np.arange(N),y]))
-    data_loss = data_loss / N               
-    reg_loss = (1/2) * reg * np.sum(W1 * W1) + (1/2) * reg * np.sum(W2 * W2)
+    data_loss /= N  
+    
+    reg_loss = 0.5 * reg * (np.sum(W1 * W1) + np.sum(W2 * W2))
     loss = data_loss + reg_loss                                      
     
     #############################################################################
@@ -114,22 +116,22 @@ class TwoLayerNet(object):
     # grads['W1'] should store the gradient on W1, and be a matrix of same size #
     #############################################################################
     mask = np.zeros(probs.shape)
-    mask[arange(N),y] = 1
+    mask[np.arange(N),y] = 1
     
     dScores = (probs-mask)/N  # ∂L/∂Scores            
     
     dW2 = np.dot(A1.T,dScores)
-    db2 = np.sum(dScores,axis=0)             
+    db2 = np.sum(dScores,axis=0,keepdims=True)             
                    
     #backprop into the hidden layer
-    dA1 =  np.dot(dScores,W2.T)  # (∂L/∂Scores) * (∂Scores/∂A1)
+    dA1 = np.dot(dScores,W2.T)  # (∂L/∂Scores) * (∂Scores/∂A1)
     
     #relu backprop
-    dZ1 =  dA1 * (Z1 >= 0)
+    dZ1 = dA1 * (Z1 >= 0)
     
     #1st Layer backprop
     dW1 = np.dot(X.T,dZ1)
-    db1 = np.sum(dZ1,axis=0)
+    db1 = np.sum(dZ1,axis=0,keepdims=True)
     
     #adding regularizaton due to reg_loss
     dW2 += reg * W2
