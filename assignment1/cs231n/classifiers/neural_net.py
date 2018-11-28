@@ -238,6 +238,7 @@ class TwoLayerNet(object):
       'loss_history': loss_history,
       'train_acc_history': train_acc_history,
       'val_acc_history': val_acc_history,
+       best_w1, best_b1, best_w2, best_b2
     }
 
   def predict(self, X):
