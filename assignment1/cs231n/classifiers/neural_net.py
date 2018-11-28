@@ -177,11 +177,13 @@ class TwoLayerNet(object):
     loss_history = []
     train_acc_history = []
     val_acc_history = []
-
+    
+    early_stop_loss = 10000    
+    
     for it in range(num_iters):
       X_batch = None
       y_batch = None
-
+      
       #########################################################################
       # TODO: Create a random minibatch of training data and labels, storing  #
       # them in X_batch and y_batch respectively.                             #
@@ -196,7 +198,7 @@ class TwoLayerNet(object):
       # Compute loss and gradients using the current minibatch
       loss, grads = self.loss(X_batch, y=y_batch, reg=reg)
       loss_history.append(loss)
-
+    
       #########################################################################
       # TODO: Use the gradients in the grads dictionary to update the         #
       # parameters of the network (stored in the dictionary self.params)      #
@@ -211,8 +213,15 @@ class TwoLayerNet(object):
       #                             END OF YOUR CODE                          #
       #########################################################################
 
+      if loss < early_stop_loss :
+         early_stop_loss = loss
+         best_w1 =  self.params['W1']
+         best_b1 =  self.params['b1'] 
+         best_w2 =  self.params['W2'] 
+         best_b2 =  self.params['b2'] 
+    
       if verbose and it % 100 == 0:
-        print('iteration %d / %d: loss %f' % (it, num_iters, loss))
+        print('iteration %d / %d: loss %f , early_stop_loss %f' % (it, num_iters, loss,early_stop_loss ))
 
       # Every epoch, check train and val accuracy and decay learning rate.
       if it % iterations_per_epoch == 0:
