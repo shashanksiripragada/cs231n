@@ -180,6 +180,8 @@ class FullyConnectedNet(object):
         self.dtype = dtype
         self.params = {}
 
+        
+        total_dims = [input_dims]+hidden_dims+[num_classes]
         ############################################################################
         # TODO: Initialize the parameters of the network, storing all values in    #
         # the self.params dictionary. Store weights and biases for the first layer #
@@ -192,7 +194,12 @@ class FullyConnectedNet(object):
         # beta2, etc. Scale parameters should be initialized to ones and shift     #
         # parameters should be initialized to zeros.                               #
         ############################################################################
-        pass
+        for i in range(self.num_layers):            
+             self.params['W%d' %(i+1)] = np.random.normal(loc=0.0,scale=weight_scale,
+                                                          size = (total_dims[i],total_dims[i+1]))
+                
+             self.params['b%d' %(i+1)] = np.zeros((total_dims[i+1]))  
+            
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
@@ -251,7 +258,14 @@ class FullyConnectedNet(object):
         # self.bn_params[1] to the forward pass for the second batch normalization #
         # layer, etc.                                                              #
         ############################################################################
-        pass
+        scores = {}
+        cache = {}
+        
+        scores[0] = X
+        for i in range(self.num_layers):
+            
+            if i+1 != 
+               scores[i+1],cache[i+1] = affine_forward(scores[i],self.params['W%d' %(i+1)],self.params['b%d' %(i+1)])
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
