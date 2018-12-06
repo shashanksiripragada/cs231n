@@ -262,10 +262,19 @@ class FullyConnectedNet(object):
         cache = {}
         
         scores[0] = X
-        for i in range(self.num_layers):
+        for i in range(1,self.num_layers+1):
             
-            if i+1 != 
-               scores[i+1],cache[i+1] = affine_forward(scores[i],self.params['W%d' %(i+1)],self.params['b%d' %(i+1)])
+            if i!=num_layers:
+               scores[i],cache[i] = affine_forward(scores[i-1],
+                                                   self.params['W%d' %(i)],
+                                                   self.params['b%d' %(i)])
+            
+               scores[i],_ = relu_forward(scores[i])
+                
+            else:
+               scores[i],cache[i] = affine_forward(scores[i-1],
+                                                   self.params['W%d' %(i)],
+                                                   self.params['b%d' %(i)]) 
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
@@ -288,7 +297,8 @@ class FullyConnectedNet(object):
         # automated tests, make sure that your L2 regularization includes a factor #
         # of 0.5 to simplify the expression for the gradient.                      #
         ############################################################################
-        pass
+        loss, dscores = softmax_loss(scores(self.num_layers),y)
+        
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
