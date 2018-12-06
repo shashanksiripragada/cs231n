@@ -299,6 +299,20 @@ class FullyConnectedNet(object):
         ############################################################################
         loss, dscores = softmax_loss(scores(self.num_layers),y)
         
+        #Adding Regularization term
+        for i in range(1,self.num_layers+1):
+            loss += 0.5 * self.reg * np.sum(self.params['W%d' %(i)] * self.params['W%d' %(i)])
+            
+        #backprop to the future
+        for i in reversed(range(1,self.num_layers+1)):
+            
+            if i==num_layers:
+               grads['%d' %(i-1)] , grads['W%d' %(i)] , grads['b%d' %(i)] = affine_backward(dscores, cache[i])
+            
+            else:
+                
+              
+        
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
