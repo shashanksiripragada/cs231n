@@ -153,17 +153,14 @@ def adam(w, dw, config=None):
     ###########################################################################
     config['t'] += 1
     
-    beta1 = config['beta1']
-    beta2 = config['beta2']
-    
     m = config['m']
     v = config['v']
     
-    m = beta1 * m + (1-beta1) * dw
-    v = beta2 * v + (1-beta2) * dw**2
+    m = config['beta1'] * m + (1-config['beta1']) * dw
+    v = config['beta2'] * v + (1-config['beta2']) * dw**2
     
-    m_corrected = m/(1-beta1**config['t'])
-    v_corrected = v/(1-beta2**config['t'])
+    m_corrected = m/(1-config['beta1']**config['t'])
+    v_corrected = v/(1-config['beta2']**config['t'])
     
     next_w = w - config['learning_rate']*(m_corrected/np.sqrt(v_corrected)+config['epsilon'])
     
