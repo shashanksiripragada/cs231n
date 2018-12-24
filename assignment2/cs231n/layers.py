@@ -184,14 +184,16 @@ def batchnorm_forward(x, gamma, beta, bn_param):
         # Referencing the original paper (https://arxiv.org/abs/1502.03167)   #
         # might prove to be helpful.                                          #
         #######################################################################
-        sample_mean = (1/N) * np.sum(x,axis=0,keepdims=True)
-        sample_var = (1/N) * np.sum((x-sample_mean)**2,axis=0)
+        sample_mean = np.mean(x,axis=0) #(1/N) * np.sum(x,axis=0,keepdims=True)
+        sample_var = np.var(x,axis=0) #(1/N) * np.sum((x-sample_mean)**2,axis=0)
         
-        norm_x = (x-sample_mean)/np.sqrt(sample_var+eps)
+        sqrt_var = np.sqrt(sample_var+eps)
+        inv_sqrt_var = 1/sqrt_var
+        xhat = (x-sample_mean) * inv_sqrt_var
         
-        out = gamma * norm_x + beta
+        out = gamma * xhat + beta
         
-        cache = (x,sample_mean,sample_var,norm_x,out,gamma,beta)
+        cache = (x,sample_mean,sample_var,sqrt_var,inv_sqrt_var,xhat,out,gamma,beta)
         
         running_mean = momentum * running_mean + (1 - momentum) * sample_mean
         running_var = momentum * running_var + (1 - momentum) * sample_var
@@ -249,26 +251,26 @@ def batchnorm_backward(dout, cache):
     N = dout.shape[0]
     D = dout.shape[1]
     
-    x,sample_mean,sample_var,norm_x,out,gamma,beta = cache
+    x,sample_mean,sample_var,sqrt_var,inv_sqrt_var,xhat,out,gamma,beta = cache
     
     dbeta = np.sum(dout,axis=0)
-    dgamma = np.sum(dout*norm_x , axis=0)
+    dgamma = np.sum(dout*xhat , axis=0)
     
-    dx_hat = dout*gamma
+    dxhat = dout*gamma
     
-    dxmu = dx_hat * (1/np.sqrt(sample_var))
+    dxmu = dxhat * inv_sqrt_var
+    dpost_inv = np.sum(dxhat*(x-sample_mean),axis=0)
     
-    dpost_var = np.sum((x-sample_mean)*dx_hat,axis=0)
-    dpre_inv = (-1/sample_var) * dpost_var 
-    dpre_sqrt = (1/(2*np.sqrt(sample_var))) * dpre_inv
+    dpre_inv = (-1/sqrt_var**2) * dpost_inv 
+    dpre_sqrt = (1/2)*inv_sqrt_var * dpre_inv
     dpre_sum = (1/N) * (np.ones((N,D))) * dpre_sqrt
-    dpre_mean =  2 * (x-sample_mean)* dpre_sum
+    dpre_mean_sub =  2 * (x-sample_mean)* dpre_sum
     
-    dpre_sub = dxmu + dpre_mean
+    dpost_sub = dxmu + dpre_mean_sub
     
-    dx_prev1 = dpre_sub
-    dx_prev2 = -1 * (np.sum(dpre_sub,axis=0))
-    dprev2_mean = np.ones((N,D)) * dx_prev2
+    dx_prev1 = dpost_sub
+    dx_prev2 = -1 * (np.sum(dpost_sub,axis=0))
+    dprev2_mean = (1/N) * np.ones((N,D)) * dx_prev2
     
     dx = dx_prev1+dprev2_mean
     
