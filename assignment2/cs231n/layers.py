@@ -405,7 +405,22 @@ def layernorm_backward(dout, cache):
     # implementation of batch normalization. The hints to the forward pass    #
     # still apply!                                                            #
     ###########################################################################
-    pass
+    N = dout.shape[0]
+    D = dout.shape[1]
+    
+    x,sample_mean,sample_var,sqrt_var,inv_sqrt_var,xhat,out,gamma,beta = cache
+    
+    dbeta = np.sum(dout,axis=0)
+    dgamma = np.sum(dout*xhat , axis=0)    
+    dxhat = dout*gamma
+    
+    xhat = xhat.T
+    dxhat = dxhat.T
+    N,D = xhat.shape
+    
+    dx = (1/N) * inv_sqrt_var * (N*dxhat - np.sum(dxhat,axis=0) - xhat*np.sum(dxhat*xhat,axis=0))
+    
+    dx = dx.T
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
