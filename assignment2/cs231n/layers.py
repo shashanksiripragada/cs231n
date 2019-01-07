@@ -545,19 +545,24 @@ def conv_forward_naive(x, w, b, conv_param):
     ###########################################################################
     pad = conv_param['pad']
     stride = conv_param['stride']
-    out.shape[0] = x.shape[0]
-    out.shape[1] = w.shape[0]
     
-    out.shape[2] = 1 + np.floor((x.shape[2] + 2 * pad - x.shape[2]) / stride)
-    out.shape[3] = 1 + np.floor((x.shape[3] + 2 * pad - x.shape[3]) / stride)
+    N, C, H, W = x.shape
     
-    pad_x = np.pad(x,pad_width=pad, mode='constant', constant_values=0)
+    F, C, HH, WW = w.shape
     
-    for i in range(out.shape[0]): #no of examples
-        for j in range(out.shape[1]): #no of filters
-            for k in range(out.shape[2]): #output height
-                for l in range(out.shape[3]): #output width
-                    out[i,j,k,l] = np.sum(x[i,:,len,wid]*w[j,:,:,:]) + b[j]
+    out_len = 1 + (H + 2 * pad - HH) // stride #get int
+    out_wid = 1 + (W + 2 * pad - WW) // stride
+    
+    out = np.zeros((N,F,out_len,out_wid))
+    
+    pad_x = np.pad(x,((0,), (0,), (pad,), (pad,)), mode='constant', constant_values=0) #leaving 1&2 dimensions of x untouched
+                                                                                       #padding in 3&4 dimensions ->len,width 
+    
+    for i in range(N): #no of examples
+        for j in range(F): #no of filters
+            for k in range(out_len): #output height
+                for l in range(out_wid): #output width
+                    out[i,j,k,l] = np.sum(pad_x[i,:,k*stride:k*stride+HH,l*stride:l*stride+WW]*w[j]) + b[j]
             
     ###########################################################################
     #                             END OF YOUR CODE                            #
