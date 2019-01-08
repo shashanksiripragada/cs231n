@@ -555,7 +555,7 @@ def conv_forward_naive(x, w, b, conv_param):
     
     out = np.zeros((N,F,out_len,out_wid))
     
-    pad_x = np.pad(x,((0,), (0,), (pad,), (pad,)), mode='constant', constant_values=0) #leaving 1&2 dimensions of x untouched
+    pad_x = np.pad(x,((0,0), (0,0), (pad,pad), (pad,pad)), mode='constant', constant_values=0) #leaving 1&2 dimensions of x untouched
                                                                                        #padding in 3&4 dimensions ->len,width 
     
     for i in range(N): #no of examples
@@ -588,6 +588,21 @@ def conv_backward_naive(dout, cache):
     ###########################################################################
     # TODO: Implement the convolutional backward pass.                        #
     ###########################################################################
+    x, w, b, conv_param = cache
+    
+    N, C, H, W = x.shape
+    F, C, HH, WW = w.shape
+    
+    pad = conv_param['pad']
+    stride = conv_param['stride']
+    
+    out_len = 1 + (H + 2 * pad - HH) // stride
+    out_wid = 1 + (W + 2 * pad - WW) // stride
+    
+    dx = np.zeros_like(x)
+    dw = np.zeros_like(w)
+    db = np.zeros_like(b)
+    
     
     ###########################################################################
     #                             END OF YOUR CODE                            #
