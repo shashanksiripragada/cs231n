@@ -599,9 +599,17 @@ def conv_backward_naive(dout, cache):
     out_len = 1 + (H + 2 * pad - HH) // stride
     out_wid = 1 + (W + 2 * pad - WW) // stride
     
+    pad_x = np.pad(x,((0,0), (0,0), (pad,pad), (pad,pad)), mode='constant', constant_values=0)
+    dpad_x = np.zeros_like(pad_x)
     dx = np.zeros_like(x)
     dw = np.zeros_like(w)
     db = np.zeros_like(b)
+    
+    for i in range(N):
+        for j in range(F):
+            for k in range(out_len):
+                for l in range(out_wid):
+                    dw[j] += pad_x[i,:,k*stride:k*stride+HH,l*stride:l*stride+WW]
     
     
     ###########################################################################
