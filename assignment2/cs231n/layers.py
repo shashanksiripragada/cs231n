@@ -697,7 +697,11 @@ def max_pool_backward_naive(dout, cache):
         for j in range(C):
             for k in range(out_h):
                 for l in range(out_w):
+                    # find indices of max_pool
+                    ind = np.unravel_index(np.argmax(x[i,j,k*stride:k*stride+pool_height,l*stride:l*stride+pool_width]),
+                                    (pool_height,pool_width))
                     
+                    dx[i,j,k*stride:k*stride+pool_height,l*stride:l*stride+pool_width][ind] = dout[i,j,k,l]
     
     
     ###########################################################################
