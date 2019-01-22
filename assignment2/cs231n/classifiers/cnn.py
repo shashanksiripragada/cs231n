@@ -61,8 +61,9 @@ class ThreeLayerConvNet(object):
         #padding such that H,W are preserved after 1st CONV (H,W)->(H,W)
         #pooling with 2x2,stride 2 (H,W)->(H/2,W/2)
         self.params['W2'] = np.random.normal(loc=0.0,scale=weight_scale,
-                                             size=((H//2)*(W//2)*filter_size,hidden_dim))
+                                             size=((H//2)*(W//2)*num_filters,hidden_dim))
         self.params['b2'] = np.zeros(hidden_dim)
+        
         
         self.params['W3'] = np.random.normal(loc=0.0,scale=weight_scale,
                                              size=(hidden_dim,num_classes))
@@ -104,7 +105,13 @@ class ThreeLayerConvNet(object):
         # Remember you can use the functions defined in cs231n/fast_layers.py and  #
         # cs231n/layer_utils.py in your implementation (already imported).         #
         ############################################################################
-        pass
+        
+        scores, conv_relu_pool_cache = conv_relu_pool_forward(X, W1, b1, conv_param, pool_param)
+        
+        scores, affine_relu_forward_cache = affine_relu_forward(scores, W2, b2)
+        
+        scores, final_cache = affine_forward(scores, W3, b3)
+        
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
@@ -123,9 +130,24 @@ class ThreeLayerConvNet(object):
         # automated tests, make sure that your L2 regularization includes a factor #
         # of 0.5 to simplify the expression for the gradient.                      #
         ############################################################################
-        pass
+        loss, dscores = softmax_loss(scores, y)
+        loss += 0.5 * self.reg * (np.sum(W1*W1) + np.sum(W2*W2) + np.sum(W3*W3))
+        
+        dscores, dW3, db3 = affine_backward(dscores, final_cache)
+        
+        dscores, dW2, db2 = affine_relu_backward(dscores, affine_relu_forward_cache)
+        
+        dx, dW1, db1 = conv_relu_pool_backward(dscores, conv_relu_pool_cache)
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
-
+         
+        grads['W1'] = dW1 + self.reg*W1
+        grads['W2'] = dW2 + self.reg*W2
+        grads['W3'] = dW3 + self.reg*W3
+        
+        grads['b1'] = db1
+        grads['b2'] = db2
+        grads['b3'] = db3
+        
         return loss, grads
