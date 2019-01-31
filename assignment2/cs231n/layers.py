@@ -824,7 +824,8 @@ def spatial_groupnorm_forward(x, gamma, beta, G, gn_param):
     # the bulk of the code is similar to both train-time batch normalization  #
     # and layer normalization!                                                # 
     ###########################################################################
-    pass
+    N,C,H,W = x.shape
+    
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
