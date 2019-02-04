@@ -874,7 +874,34 @@ def spatial_groupnorm_backward(dout, cache):
     # TODO: Implement the backward pass for spatial group normalization.      #
     # This will be extremely similar to the layer norm implementation.        #
     ###########################################################################
-    pass
+    xhat,inv_std,gamma,G = cache
+    
+    N,C,H,W = dout.shape
+    
+    dbeta = dout.sum(axis=(0,2,3),keepdims=True) #(1,C,1,1)
+    
+    dgamma = np.sum(dout*xhat,axis=(0,2,3),keepdims=True) #(1,C,1,1)
+    
+    dxhat = gamma*dout
+    
+    #backprop into groupnorm
+    #Reshape to replicate forward pass dimensions
+    
+    xhat_new = xhat.reshape(N,G,C//G,H,W)
+    dxhat_new = dxhat.reshape(N,G,C//G,H,W)
+    
+    # We want the dimensions we used to compute mean and var
+    # This way we only need to change the dimensions indexes below from
+    # the layernorm equation
+    N1 = (C//G) * H * W
+
+    # https://kevinzakka.github.io/2016/09/14/batch_normalization/
+    dx = (1./N1) * inv_std * (N1 * dxhat_new - np.sum(dxhat_new, axis=(2, 3, 4), keepdims=True) -
+                            xhat_new * np.sum(dxhat_new * xhat_new, axis=(2, 3, 4), keepdims=True))
+    
+    dx = dx.reshape(N, C, H, W)
+    
+    
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
