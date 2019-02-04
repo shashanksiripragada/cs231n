@@ -826,6 +826,29 @@ def spatial_groupnorm_forward(x, gamma, beta, G, gn_param):
     ###########################################################################
     N,C,H,W = x.shape
     
+    #Follows implementation of Fig 3: (https://arxiv.org/pdf/1803.08494.pdf)
+    
+    x_new = x.reshape(N,G,C//G,H,W)
+    
+    #mean along the C//G H W axis
+    sample_mean = x_new.mean(axis=(2,3,4),keepdims=True)
+    
+    x_centered = x_new - sample_mean
+    
+    #variance along the C//G H W axis
+    sample_var = x_new.var(axis=(2,3,4),keepdims=True)
+    
+    std = np.sqrt(sample_var+eps)
+    inv_std = 1./std
+    
+    xhat = x_centered * inv_std
+    
+    xhat = xhat.reshape(N,C,H,W) #reshape into original
+    
+    
+    
+    
+    
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
