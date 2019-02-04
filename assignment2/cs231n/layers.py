@@ -845,9 +845,9 @@ def spatial_groupnorm_forward(x, gamma, beta, G, gn_param):
     
     xhat = xhat.reshape(N,C,H,W) #reshape into original
     
+    out = gamma*xhat + beta
     
-    
-    
+    cache = (xhat,inv_std,gamma,G)
     
     ###########################################################################
     #                             END OF YOUR CODE                            #
