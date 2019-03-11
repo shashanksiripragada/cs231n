@@ -68,7 +68,7 @@ def rnn_step_backward(dnext_h, cache):
     #Comp Graph
     x,Wx,prev_h,Wh,b,notan_h = cache
     
-    dz = (1-notan_h**2) * dnext_h
+    dz = (1-np.tanh(notan_h)**2) * dnext_h
     dp = dz
     dq = dz
     db = np.sum(dz,axis=0)
@@ -109,7 +109,7 @@ def rnn_forward(x, h0, Wx, Wh, b):
     # input data. You should use the rnn_step_forward function that you defined  #
     # above. You can use a for loop to help compute the forward pass.            #
     ##############################################################################
-    pass
+    
     ##############################################################################
     #                               END OF YOUR CODE                             #
     ##############################################################################
