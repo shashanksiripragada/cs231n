@@ -153,7 +153,28 @@ def rnn_backward(dh, cache):
     # sequence of data. You should use the rnn_step_backward function that you   #
     # defined above. You can use a for loop to help compute the backward pass.   #
     ##############################################################################
-    pass
+    h0,forward_cache,N,T,D,H = cache
+    
+    dprev_h = np.zeros((N,H))
+    dnext_h = np.zeros((N,T,H))        
+    dx = np.zeros((N,T,D))
+    dWx = np.zeros((D,H))
+    dWh = np.zeros((H,H))
+    db = np.zeros((H))
+    
+    
+    for t in reversed(range(T)):
+        # Last layer only has the connection ot LOSS
+        dnext_h[:,t,:] = dprev_h + dh[:,t,:]
+        
+        dx[:,t,:], dprev_h, dWx_step, dWh_step, db_step = rnn_step_backward(dnext_h[:,t,:], forward_cache[t])
+
+        
+        dWx += dWx_step
+        dWh += dWh_step
+        db += db_step
+
+    dh0 = dprev_h   
     ##############################################################################
     #                               END OF YOUR CODE                             #
     ##############################################################################
