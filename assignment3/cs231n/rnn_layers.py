@@ -166,7 +166,7 @@ def rnn_backward(dh, cache):
     
     
     for t in reversed(range(T)):
-        # Last layer only has the connection ot LOSS
+        # Last layer only has the connection at LOSS
         dnext_h[:,t,:] = dprev_h + dh[:,t,:]
         
         dx[:,t,:], dprev_h, dWx_step, dWh_step, db_step = rnn_step_backward(dnext_h[:,t,:], forward_cache[t])
