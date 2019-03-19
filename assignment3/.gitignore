@@ -4,3 +4,4 @@
 
 # gitignore the built release.
 assignment3/*
+.ipynb_checkpoints
