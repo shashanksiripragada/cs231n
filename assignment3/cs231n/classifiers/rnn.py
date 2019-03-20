@@ -212,7 +212,7 @@ class CaptioningRNN(object):
         # NOTE: we are still working over minibatches in this function. Also if   #
         # you are using an LSTM, initialize the first cell state to zeros.        #
         ###########################################################################
-        pass
+        
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
