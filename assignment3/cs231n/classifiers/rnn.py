@@ -97,8 +97,11 @@ class CaptioningRNN(object):
         # after receiving word t. The first element of captions_in will be the START
         # token, and the first element of captions_out will be the first word.
         captions_in = captions[:, :-1]
+        
+        #print(captions_in.shape)
         captions_out = captions[:, 1:]
-
+        #print(captions_out.shape) 
+            
         # You'll need this
         mask = (captions_out != self._null)
 
@@ -116,31 +119,35 @@ class CaptioningRNN(object):
         W_vocab, b_vocab = self.params['W_vocab'], self.params['b_vocab']
 
         loss, grads = 0.0, {}
-        ############################################################################
-        # TODO: Implement the forward and backward passes for the CaptioningRNN.   #
-        # In the forward pass you will need to do the following:                   #
-        # (1) Use an affine transformation to compute the initial hidden state     #
-        #     from the image features. This should produce an array of shape (N, H)#
-        # (2) Use a word embedding layer to transform the words in captions_in     #
-        #     from indices to vectors, giving an array of shape (N, T, W).         #
-        # (3) Use either a vanilla RNN or LSTM (depending on self.cell_type) to    #
-        #     process the sequence of input word vectors and produce hidden state  #
-        #     vectors for all timesteps, producing an array of shape (N, T, H).    #
-        # (4) Use a (temporal) affine transformation to compute scores over the    #
-        #     vocabulary at every timestep using the hidden states, giving an      #
-        #     array of shape (N, T, V).                                            #
-        # (5) Use (temporal) softmax to compute loss using captions_out, ignoring  #
-        #     the points where the output word is <NULL> using the mask above.     #
-        #                                                                          #
-        # In the backward pass you will need to compute the gradient of the loss   #
-        # with respect to all model parameters. Use the loss and grads variables   #
-        # defined above to store loss and gradients; grads[k] should give the      #
-        # gradients for self.params[k].                                            #
-        #                                                                          #
-        # Note also that you are allowed to make use of functions from layers.py   #
-        # in your implementation, if needed.                                       #
-        ############################################################################
-        pass
+        
+        # project N,D feature vectors to N,H that'll go into RNN
+        feat_in, feat_cache_in = affine_forward(features,W_proj,b_proj)
+        
+        # convert N,T to N,T,W (each element is the word vector with dim W)
+        embed_in, embed_cache_in = word_embedding_forward(captions_in,W_embed)
+        
+        #now that we have x,h0 we can use the rnn forward 
+        hidden_rnn, hidden_cache = rnn_forward(embed_in,feat_in, Wx, Wh, b)
+        
+        # project hidden_rnn scores of dim N,T,H to dim N,T,V (using W_vocab,b_vocab)
+        scores, vocab_cache = temporal_affine_forward(hidden_rnn,W_vocab,b_vocab)
+        
+        #now that we have scores we can calculate temporal_softmax_loss
+        loss, dscores = temporal_softmax_loss(scores, captions_out, mask, verbose=False)
+        
+        #backprop through vocab projection       
+        hidden_grads,grads['W_vocab'],grads['b_vocab'] = temporal_affine_backward(dscores,vocab_cache)
+        
+        #backprop through rnn        
+        embed_grads,feat_proj_grads,grads['Wx'],grads['Wh'],grads['b'] = rnn_backward(hidden_grads,hidden_cache)
+        
+        #backprop through word_embedding
+        grads['W_embed'] = word_embedding_backward(embed_grads, embed_cache_in)
+        
+        #backprop through feature projection
+        dfeatures,grads['W_proj'],grads['b_proj'] = affine_backward(feat_proj_grads,feat_cache_in)            
+        
+
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
