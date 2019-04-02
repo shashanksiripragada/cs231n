@@ -299,16 +299,15 @@ def lstm_step_forward(x, prev_h, prev_c, Wx, Wh, b):
     #divide into input i, forget f, output o, block-input g gates
     
     i = sigmoid(a[:,:H])
-    o = sigmoid(a[:,H:2*H])
-    f = sigmoid(a[:,2*H:3*H])
-    g = np.tanh(a[:,3*H:])
+    f = sigmoid(a[:,H : 2 * H])
+    o = sigmoid(a[:,2 * H :3 * H])
+    g = np.tanh(a[:,3 * H : 4 * H])
     
     next_c = f * prev_c + i * g
     
     next_h = o * np.tanh(next_c)
 
     cache = (x, prev_h, prev_c, Wx, Wh, a, i, f, o, g, next_c, next_h)
-    
     
     ##############################################################################
     #                               END OF YOUR CODE                             #
@@ -343,6 +342,33 @@ def lstm_step_backward(dnext_h, dnext_c, cache):
     #############################################################################
     x, prev_h, prev_c, Wx, Wh, a, i, f, o, g, next_c, next_h = cache
     
+    H = prev_h.shape[1]
+    
+    do = np.tanh(next_c) * dnext_h
+    
+    dnext_c += o * (1 - np.tanh(next_c)**2) * dnext_h
+    
+    df = prev_c * dnext_c
+    
+    dprev_c = f * dnext_c
+    
+    di = g * dnext_c
+    
+    dg = i * dnext_c
+    
+    da_i = i * (1-i) * di
+    
+    da_f = f * (1-f) * df
+    
+    da_o = o * (1-o) * do
+    
+    da_g= (1-g**2) * dg
+    
+    da = np.hstack((da_i, da_f, da_o, da_g))
+    
+    dx = np.dot(da,Wx.T)
+    
+    dWx = 
     
     ##############################################################################
     #                               END OF YOUR CODE                             #
