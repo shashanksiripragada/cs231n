@@ -125,12 +125,15 @@ class CaptioningRNN(object):
         
         # convert N,T to N,T,W (each element is the word vector with dim W)
         embed_in, embed_cache_in = word_embedding_forward(captions_in,W_embed)
-        
-        #now that we have x,h0 we can use the rnn forward 
-        hidden_rnn, hidden_cache = rnn_forward(embed_in,feat_in, Wx, Wh, b)
+         
+        if self.cell_type=='rnn':   
+            #now that we have x,h0 we can use the rnn forward 
+            h, hidden_cache = rnn_forward(embed_in,feat_in, Wx, Wh, b)
+        else:
+            h, hidden_cache = lstm_forward(embed_in,feat_in, Wx, Wh, b)
         
         # project hidden_rnn scores of dim N,T,H to dim N,T,V (using W_vocab,b_vocab)
-        scores, vocab_cache = temporal_affine_forward(hidden_rnn,W_vocab,b_vocab)
+        scores, vocab_cache = temporal_affine_forward(h,W_vocab,b_vocab)
         
         #now that we have scores we can calculate temporal_softmax_loss
         loss, dscores = temporal_softmax_loss(scores, captions_out, mask, verbose=False)
@@ -138,9 +141,12 @@ class CaptioningRNN(object):
         #backprop through vocab projection       
         hidden_grads,grads['W_vocab'],grads['b_vocab'] = temporal_affine_backward(dscores,vocab_cache)
         
-        #backprop through rnn        
-        embed_grads,feat_proj_grads,grads['Wx'],grads['Wh'],grads['b'] = rnn_backward(hidden_grads,hidden_cache)
-        
+        if self.cell_type=='rnn':
+           #backprop through rnn        
+            embed_grads,feat_proj_grads,grads['Wx'],grads['Wh'],grads['b'] = rnn_backward(hidden_grads,hidden_cache)
+        else:
+            embed_grads,feat_proj_grads,grads['Wx'],grads['Wh'],grads['b'] = lstm_backward(hidden_grads,hidden_cache) 
+            
         #backprop through word_embedding
         grads['W_embed'] = word_embedding_backward(embed_grads, embed_cache_in)
         
@@ -214,16 +220,23 @@ class CaptioningRNN(object):
         ###########################################################################
         im_feat,_ = affine_forward(features,W_proj,b_proj)
         h = np.zeros((max_length+1,W_proj.shape[1]))
+        c=0
         for n in range(N):
             for t in range(max_length):
                 if t==0:
                     embed,_ = word_embedding_forward(self._start,W_embed)
-                    h[1],_ =  rnn_step_forward(embed, im_feat[n][:], Wx, Wh, b)
+                    if self.cell_type == 'rnn':
+                        h[1],_ =  rnn_step_forward(embed, im_feat[n][:], Wx, Wh, b)
+                    else:
+                        h[1],c,_ = lstm_step_forward(embed, im_feat[n][:],c,Wx, Wh, b)
                     vocab,_ = affine_forward(h[1].reshape(1,-1),W_vocab,b_vocab)
                     captions[n][t] = np.argmax(vocab,axis=1)
                 else:
                     embed,_ =  word_embedding_forward(captions[n][t],W_embed)
-                    h[t+1],_ =  rnn_step_forward(embed, h[t], Wx, Wh, b)
+                    if self.cell_type == 'rnn': 
+                         h[t+1],_ =  rnn_step_forward(embed, h[t], Wx, Wh, b)
+                    else:
+                         h[t+1],c,_ =  lstm_step_forward(embed, h[t],c, Wx, Wh, b)
                     vocab,_ = affine_forward(h[t+1].reshape(1,-1),W_vocab,b_vocab)
                     captions[n][t] = np.argmax(vocab,axis=1)
                     
