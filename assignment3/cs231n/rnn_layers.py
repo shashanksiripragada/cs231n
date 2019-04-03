@@ -368,7 +368,13 @@ def lstm_step_backward(dnext_h, dnext_c, cache):
     
     dx = np.dot(da,Wx.T)
     
-    dWx = 
+    dWx = np.dot(x.T,da)
+    
+    dprev_h = np.dot(da,Wh.T)
+    
+    dWh = np.dot(prev_h.T,da)
+    
+    db = np.sum(da,axis=0)
     
     ##############################################################################
     #                               END OF YOUR CODE                             #
