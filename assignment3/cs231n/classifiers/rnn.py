@@ -105,19 +105,13 @@ class CaptioningRNN(object):
         # You'll need this
         mask = (captions_out != self._null)
 
-        # Weight and bias for the affine transform from image features to initial
-        # hidden state
+
         W_proj, b_proj = self.params['W_proj'], self.params['b_proj']
-
-        # Word embedding matrix
         W_embed = self.params['W_embed']
-
-        # Input-to-hidden, hidden-to-hidden, and biases for the RNN
         Wx, Wh, b = self.params['Wx'], self.params['Wh'], self.params['b']
-
-        # Weight and bias for the hidden-to-vocab transformation.
         W_vocab, b_vocab = self.params['W_vocab'], self.params['b_vocab']
 
+        
         loss, grads = 0.0, {}
         
         # project N,D feature vectors to N,H that'll go into RNN
@@ -218,28 +212,28 @@ class CaptioningRNN(object):
         # NOTE: we are still working over minibatches in this function. Also if   #
         # you are using an LSTM, initialize the first cell state to zeros.        #
         ###########################################################################
-        im_feat,_ = affine_forward(features,W_proj,b_proj)
-        h = np.zeros((max_length+1,W_proj.shape[1]))
-        c = np.zeros(im_feat.shape)
-        for n in range(N):
-            for t in range(max_length):
-                if t==0:
-                    embed,_ = word_embedding_forward(self._start,W_embed)
-                    if self.cell_type == 'rnn':
-                        h[1],_ =  rnn_step_forward(embed, im_feat[n][:], Wx, Wh, b)
-                    else:
-                        h[1],c[n,:],_ = lstm_step_forward(embed, im_feat[n][:].reshape(1,-1),c[n,:],Wx, Wh, b)                        
-                    vocab,_ = affine_forward(h[1].reshape(1,-1),W_vocab,b_vocab)
-                    captions[n][t] = np.argmax(vocab,axis=1)
-                else:
-                    embed,_ =  word_embedding_forward(captions[n][t],W_embed)
-                    if self.cell_type == 'rnn': 
-                         h[t+1],_ =  rnn_step_forward(embed, h[t], Wx, Wh, b)
-                    else:
-                         h[t+1],c[n,:],_ =  lstm_step_forward(embed, h[t].reshape(1,-1),c[n,:], Wx, Wh, b)
-                    vocab,_ = affine_forward(h[t+1].reshape(1,-1),W_vocab,b_vocab)
-                    captions[n][t] = np.argmax(vocab,axis=1)
-                    
+        init_hidden,_ = affine_forward(features,W_proj,b_proj)
+
+        curr_hidden = init_hidden
+        
+        start_embed,_ = word_embedding_forward(self._start,W_embed)
+        
+        word_embed = start_embed
+        
+        cell_state = np.zeros(init_hidden.shape)
+        
+        for t in range(max_length):
+            if self.cell_type == 'rnn':
+                curr_hidden,_ =  rnn_step_forward(word_embed, curr_hidden, Wx, Wh, b)
+            else:
+                curr_hidden,cell_state,_ = lstm_step_forward(word_embed, curr_hidden,cell_state,Wx, Wh, b)  
+                
+            vocab,_ = affine_forward(curr_hidden,W_vocab,b_vocab)
+            
+            captions[:,t] = np.argmax(vocab,axis=1)
+
+            word_embed, _ = word_embedding_forward(captions[:, t], W_embed)
+
                 
         ############################################################################
         #                             END OF YOUR CODE                             #
