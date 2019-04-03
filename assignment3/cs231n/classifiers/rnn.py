@@ -220,7 +220,7 @@ class CaptioningRNN(object):
         ###########################################################################
         im_feat,_ = affine_forward(features,W_proj,b_proj)
         h = np.zeros((max_length+1,W_proj.shape[1]))
-        c=0
+        c = np.zeros(im_feat.shape)
         for n in range(N):
             for t in range(max_length):
                 if t==0:
@@ -228,7 +228,7 @@ class CaptioningRNN(object):
                     if self.cell_type == 'rnn':
                         h[1],_ =  rnn_step_forward(embed, im_feat[n][:], Wx, Wh, b)
                     else:
-                        h[1],c,_ = lstm_step_forward(embed, im_feat[n][:],c,Wx, Wh, b)
+                        h[1],c[n,:],_ = lstm_step_forward(embed, im_feat[n][:].reshape(1,-1),c[n,:],Wx, Wh, b)                        
                     vocab,_ = affine_forward(h[1].reshape(1,-1),W_vocab,b_vocab)
                     captions[n][t] = np.argmax(vocab,axis=1)
                 else:
@@ -236,7 +236,7 @@ class CaptioningRNN(object):
                     if self.cell_type == 'rnn': 
                          h[t+1],_ =  rnn_step_forward(embed, h[t], Wx, Wh, b)
                     else:
-                         h[t+1],c,_ =  lstm_step_forward(embed, h[t],c, Wx, Wh, b)
+                         h[t+1],c[n,:],_ =  lstm_step_forward(embed, h[t].reshape(1,-1),c[n,:], Wx, Wh, b)
                     vocab,_ = affine_forward(h[t+1].reshape(1,-1),W_vocab,b_vocab)
                     captions[n][t] = np.argmax(vocab,axis=1)
                     
